@@ -1,0 +1,288 @@
+val Number morning_hour=8
+val Number afternoon_hour=13
+val Number evening_hour=17
+val Number night_hour=23
+val Number morning_minute=30
+val Number afternoon_minute=30
+val Number evening_minute=30
+val Number night_minute=30
+
+val Number Hysteresis = 0.3
+
+
+/**
+*   Rules to update NORMAL mode target temperature based on the hour of the day
+**/
+rule "8:30"
+when
+    Time cron "0 30 8 ? * * *"
+then
+    GF_Heating_TempNormal.postUpdate(GF_Heating_MorningTempNormal.state as Number)
+    FF_Heating_TempNormal.postUpdate(FF_Heating_MorningTempNormal.state as Number)
+    Heating_UpdateTarget.sendCommand(ON)
+end
+
+rule "13:30"
+when
+    Time cron "0 30 13 ? * * *"
+then
+    GF_Heating_TempNormal.postUpdate(GF_Heating_AfternoonTempNormal.state as Number)
+    FF_Heating_TempNormal.postUpdate(FF_Heating_AfternoonTempNormal.state as Number)
+    Heating_UpdateTarget.sendCommand(ON)
+end
+
+rule "17:30"
+when
+    Time cron "0 30 17 ? * * *"
+then
+    GF_Heating_TempNormal.postUpdate(GF_Heating_EveningTempNormal.state as Number)
+    FF_Heating_TempNormal.postUpdate(FF_Heating_EveningTempNormal.state as Number)
+    Heating_UpdateTarget.sendCommand(ON)
+end
+
+rule "23:30"
+when
+    Time cron "0 30 23 ? * * *"
+then
+    GF_Heating_TempNormal.postUpdate(GF_Heating_NightTempNormal.state as Number)
+    FF_Heating_TempNormal.postUpdate(FF_Heating_NightTempNormal.state as Number)
+    Heating_UpdateTarget.sendCommand(ON)
+end
+
+
+/** 
+*    At every heating mode switch or command of update target:
+*    send the new target temperature to the heating system 
+**/
+rule "React on heating mode switch, send target temperatures"
+when
+    Item Heating_Mode received update or
+    Item Heating_UpdateTarget received command ON
+then
+    Heating_UpdateTarget.postUpdate(OFF)
+
+    switch Heating_Mode.state {
+        case "MANUAL": {
+            GF_Temperature_Setpoint.sendCommand(GF_Heating_MaxTempManual.state as Number)
+            FF_Temperature_Setpoint.sendCommand(FF_Heating_MaxTempManual.state as Number)
+        }
+        case "NORMAL": {
+            GF_Temperature_Setpoint.sendCommand(GF_Heating_TempNormal.state as Number)
+            FF_Temperature_Setpoint.sendCommand(FF_Heating_TempNormal.state as Number)
+        }
+        case "HOLIDAY": {
+            GF_Temperature_Setpoint.sendCommand(GF_Heating_MinTempHoliday.state as Number)
+            FF_Temperature_Setpoint.sendCommand(FF_Heating_MinTempHoliday.state as Number)
+        }
+        case "STOP": {
+            GF_Temperature_Setpoint.sendCommand(0)
+            FF_Temperature_Setpoint.sendCommand(0)
+        }        
+        default : { logError("Heating_Mode.rules", "Heating Mode unknown: " + Heating_Mode.state) }
+    }
+end
+
+
+/**
+*   Update target rules: react at every change of the target and send the command to update it 
+**/
+rule "Update Holiday Target GF"
+when 
+    Item GF_Heating_MinTempHoliday changed 
+then
+    if(Heating_Mode.state=='HOLIDAY')
+        Heating_UpdateTarget.sendCommand(ON)
+end
+
+rule "Update Manual Target GF"
+when 
+    Item GF_Heating_MaxTempManual changed 
+then
+    if(Heating_Mode.state=='MANUAL')
+        Heating_UpdateTarget.sendCommand(ON)
+end
+
+rule "Update Normal Target Morning GF"
+when 
+    Item GF_Heating_MorningTempNormal changed  
+then
+val MinutesNow= now.getMinuteOfDay;
+        
+    if(MinutesNow >=((morning_hour*60)+morning_minute) && MinutesNow <((afternoon_hour*60)+afternoon_minute)){
+        GF_Heating_TempNormal.postUpdate(GF_Heating_MorningTempNormal.state as Number)
+        }
+    if(Heating_Mode.state=='NORMAL'){
+        Heating_UpdateTarget.sendCommand(ON)
+    }
+end
+
+rule "Update Normal Target Afternoon GF"
+when
+    Item GF_Heating_AfternoonTempNormal changed 
+then
+    val MinutesNow= now.getMinuteOfDay;
+
+    if(MinutesNow >=((afternoon_hour*60)+afternoon_minute) && MinutesNow <((evening_hour*60)+evening_minute)){
+        GF_Heating_TempNormal.postUpdate(GF_Heating_AfternoonTempNormal.state as Number)
+        }
+    if(Heating_Mode.state=='NORMAL'){
+        Heating_UpdateTarget.sendCommand(ON)
+    }
+end
+
+rule "Update Normal Target Evening GF"
+when
+    Item GF_Heating_EveningTempNormal changed 
+then
+    val MinutesNow= now.getMinuteOfDay;
+
+    if(MinutesNow >=((evening_hour*60)+evening_minute) && MinutesNow <((night_hour*60)+night_minute)){
+        GF_Heating_TempNormal.postUpdate(GF_Heating_EveningTempNormal.state as Number)                
+    }
+    if(Heating_Mode.state=='NORMAL'){
+        Heating_UpdateTarget.sendCommand(ON)
+    }
+end
+
+rule "Update Normal Target Night GF"
+when
+    Item GF_Heating_NightTempNormal changed 
+then
+    val MinutesNow= now.getMinuteOfDay;
+
+    if(MinutesNow >=((night_hour*60)+night_minute) || MinutesNow <((morning_hour*60)+morning_minute)){
+        GF_Heating_TempNormal.postUpdate(GF_Heating_NightTempNormal.state as Number)                
+        }
+    if(Heating_Mode.state=='NORMAL'){
+        Heating_UpdateTarget.sendCommand(ON)
+    }
+end
+
+rule "Update Holiday Target FF"
+when 
+    Item FF_Heating_MinTempHoliday changed 
+then
+    if(Heating_Mode.state=='HOLIDAY')
+        Heating_UpdateTarget.sendCommand(ON)
+end
+
+rule "Update Manual Target FF"
+when 
+    Item FF_Heating_MaxTempManual changed 
+then
+    if(Heating_Mode.state=='MANUAL')
+        Heating_UpdateTarget.sendCommand(ON)
+end
+
+rule "Update Normal Target Morning FF"
+when 
+    Item FF_Heating_MorningTempNormal changed  
+then
+val MinutesNow= now.getMinuteOfDay;
+        
+    if(MinutesNow >=((morning_hour*60)+morning_minute) && MinutesNow <((afternoon_hour*60)+afternoon_minute)){
+        FF_Heating_TempNormal.postUpdate(FF_Heating_MorningTempNormal.state as Number)
+        }
+    if(Heating_Mode.state=='NORMAL'){
+        Heating_UpdateTarget.sendCommand(ON)
+    }
+end
+
+rule "Update Normal Target Afternoon FF"
+when
+    Item FF_Heating_AfternoonTempNormal changed 
+then
+    val MinutesNow= now.getMinuteOfDay;
+
+    if(MinutesNow >=((afternoon_hour*60)+afternoon_minute) && MinutesNow <((evening_hour*60)+evening_minute)){
+        FF_Heating_TempNormal.postUpdate(FF_Heating_AfternoonTempNormal.state as Number)
+        }
+    if(Heating_Mode.state=='NORMAL'){
+        Heating_UpdateTarget.sendCommand(ON)
+    }
+end
+
+rule "Update Normal Target Evening FF"
+when
+    Item FF_Heating_EveningTempNormal changed 
+then
+    val MinutesNow= now.getMinuteOfDay;
+
+    if(MinutesNow >=((evening_hour*60)+evening_minute) && MinutesNow <((night_hour*60)+night_minute)){
+        FF_Heating_TempNormal.postUpdate(FF_Heating_EveningTempNormal.state as Number)                
+    }
+    if(Heating_Mode.state=='NORMAL'){
+        Heating_UpdateTarget.sendCommand(ON)
+    }
+end
+
+rule "Update Normal Target Night FF"
+when
+    Item FF_Heating_NightTempNormal changed 
+then
+    val MinutesNow= now.getMinuteOfDay;
+
+    if(MinutesNow >=((night_hour*60)+night_minute) || MinutesNow <((morning_hour*60)+morning_minute)){
+        FF_Heating_TempNormal.postUpdate(FF_Heating_NightTempNormal.state as Number)                
+        }
+    if(Heating_Mode.state=='NORMAL'){
+        Heating_UpdateTarget.sendCommand(ON)
+    }
+end
+
+
+
+/**
+*   Rules to simulate a basic heating system.
+*   The heating of a floor in activated based on the average temperature in the floor.
+*
+**/ 
+
+rule "Reach Target GF"
+when 
+    Item Managing_System_Active changed or 
+    Item GF_Temperature_Setpoint changed or
+    Time cron "0/5 0/1 * 1/1 * ? *" //Fire the control every 5 seconds
+then 
+    if(Managing_System_Active.state != ON){
+        var Number Current_Temp= GF_Temperature.state as Number
+        var Number Target_Temp= GF_Temperature_Setpoint.state as Number 
+
+        if(Heating_Mode.state!='STOP' &&(Current_Temp < (Target_Temp-Hysteresis))){
+            HeatingGF.sendCommand(ON)
+        }   
+        if(Heating_Mode.state!='STOP' && (Current_Temp > (Target_Temp+Hysteresis)))
+            HeatingGF.sendCommand(OFF)
+    }
+end
+
+rule "Reach Target FF"
+when 
+    Item Managing_System_Active changed or 
+    Item FF_Temperature_Setpoint changed or
+    Time cron "0/5 0/1 * 1/1 * ? *" //Fire the control every 5 seconds
+then 
+    if(Managing_System_Active.state != ON){
+        var Number Current_Temp= FF_Temperature.state as Number
+        var Number Target_Temp= FF_Temperature_Setpoint.state as Number 
+
+        if(Heating_Mode.state!='STOP' &&(Current_Temp < (Target_Temp-Hysteresis))){
+            HeatingFF.sendCommand(ON)
+        }   
+        if(Heating_Mode.state!='STOP' && (Current_Temp > (Target_Temp+Hysteresis)))
+            HeatingFF.sendCommand(OFF)
+    }
+end
+
+/**
+*   This rule stops each radiators when the mode has been setted to STOP
+**/
+rule "Stop Mode "
+when 
+    Item Heating_Mode changed
+then 
+    if(Heating_Mode.state=='STOP'){
+        HeatingGF.members.forEach[item | item.sendCommand(OFF)]
+        HeatingFF.members.forEach[item | item.sendCommand(OFF)]
+    }
+end

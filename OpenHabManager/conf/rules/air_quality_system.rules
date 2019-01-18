@@ -1,0 +1,87 @@
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Calendar
+import java.text.DateFormat
+//support variables
+var String currentHour
+var String currentMinute
+var String startingClosingTime
+var String stoppingClosingTime
+var String startingSystemActivationTime
+var String stoppingSystemActivationTime
+var String currentDay
+var Date startingClosingDate
+var Date stoppingClosingDate
+var Date startingActivationDate
+var Date stoppingActivationDate
+var Date currentDate
+var DateFormat datos
+
+rule "Managed Windows System"
+
+when
+    Item Starting_Hour_Windows_Closing changed or
+    Item Starting_Minute_Windows_Closing changed or
+    Item Stopping_Hour_Windows_Closing changed or
+    Item Stopping_Minute_Windows_Closing changed or
+    Item Starting_Hour_System_Activation changed or
+    Item Starting_Minute_System_Activation changed or
+    Item Stopping_Hour_System_Activation changed or
+    Item Stopping_Minute_System_Activation changed or
+    Time cron "0/30 0/1 * 1/1 * ? *" //Fire every 30 seconds (change to "0 0/1 * * * ?" to fire every minute) 
+
+then
+    datos = new SimpleDateFormat ("yyyy-MM-dd HH:mm:ss")
+    currentDate = new Date()
+    currentDay = Calendar.getInstance().get(Calendar.YEAR).toString() + "-" + (Calendar.getInstance().get(Calendar.MONTH)+1).toString() + "-" + Calendar.getInstance().get(Calendar.DAY_OF_MONTH).toString()
+    startingClosingTime = currentDay + " " + Starting_Hour_Windows_Closing.state.toString + ":" + Starting_Minute_Windows_Closing.state.toString + ":00"
+    stoppingClosingTime = currentDay + " " + Stopping_Hour_Windows_Closing.state.toString + ":" + Stopping_Minute_Windows_Closing.state.toString + ":00"
+    startingSystemActivationTime = currentDay + " " + Starting_Hour_System_Activation.state.toString + ":" + Starting_Minute_System_Activation.state.toString + ":00"
+    stoppingSystemActivationTime = currentDay + " " + Stopping_Hour_System_Activation.state.toString + ":" + Stopping_Minute_System_Activation.state.toString + ":00"
+    startingClosingDate = datos.parse(startingClosingTime)
+    stoppingClosingDate = datos.parse(stoppingClosingTime)
+    startingActivationDate = datos.parse(startingSystemActivationTime)
+    stoppingActivationDate = datos.parse(stoppingSystemActivationTime)
+
+    //forced closing of the windows
+        if ((currentDate.after(startingClosingDate) && currentDate.before(stoppingClosingDate))){
+            GF_Living_Window.postUpdate("CLOSED")
+            GF_Kitchen_Window.postUpdate("CLOSED")
+            GF_Bathroom_Window.postUpdate("CLOSED")
+            FF_Bedroom_Window.postUpdate("CLOSED")
+            FF_ChildrenRoom_Window.postUpdate("CLOSED")
+        }
+        if (currentDate.after(startingActivationDate) && currentDate.before(stoppingActivationDate)){
+            GF_Living_Window.postUpdate("OPEN")
+            GF_Kitchen_Window.postUpdate("OPEN")
+            GF_Bathroom_Window.postUpdate("OPEN")
+            FF_Bedroom_Window.postUpdate("OPEN")
+            FF_ChildrenRoom_Window.postUpdate("OPEN")
+        }
+    
+    
+     if (stoppingClosingDate.before(startingClosingDate)){
+        Stopping_Hour_Windows_Closing.state = Starting_Hour_Windows_Closing.state
+        Stopping_Minute_Windows_Closing.state = Starting_Minute_Windows_Closing.state
+    }
+    if (stoppingActivationDate.before(startingActivationDate)){
+        Stopping_Hour_System_Activation.state = Starting_Hour_System_Activation.state
+        Stopping_Minute_System_Activation.state = Starting_Minute_System_Activation.state
+    }
+    if (startingActivationDate.after(startingClosingDate) && startingActivationDate.before(stoppingClosingDate)){
+        Starting_Hour_System_Activation.state = Stopping_Hour_Windows_Closing.state
+        Starting_Minute_System_Activation.state = Stopping_Minute_Windows_Closing.state
+    }
+    if (stoppingActivationDate.after(startingClosingDate) && stoppingActivationDate.before(stoppingClosingDate)){
+        Stopping_Hour_System_Activation.state = Starting_Hour_Windows_Closing.state
+        Stopping_Minute_System_Activation.state = Starting_Minute_Windows_Closing.state
+    }
+    if (startingClosingDate.after(startingActivationDate) && startingClosingDate.before(stoppingActivationDate)){
+        Starting_Hour_Windows_Closing.state = Stopping_Hour_System_Activation.state
+        Starting_Minute_Windows_Closing.state = Stopping_Minute_System_Activation.state
+    }
+    if (stoppingClosingDate.after(startingActivationDate) && stoppingClosingDate.before(stoppingActivationDate)){
+        Stopping_Hour_Windows_Closing.state = Starting_Hour_System_Activation.state
+        Stopping_Minute_Windows_Closing.state = Starting_Minute_System_Activation.state
+    }
+end

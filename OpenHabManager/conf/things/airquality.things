@@ -1,0 +1,5 @@
+/**
+*   airquality:aqi:home "AirQuality in Calusco" [ apikey="a7ed58824eca07dfa01f755bc7e56ca5e58a9fcb", location="45.706298,9.555291", refresh=60 ]
+**/
+airquality:aqi:home "AirQuality in Dalmine" [ apikey="a7ed58824eca07dfa01f755bc7e56ca5e58a9fcb", location="45.6493300,9.6061700", refresh=60 ]
+

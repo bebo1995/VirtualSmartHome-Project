@@ -1,0 +1,137 @@
+import java.util.Random
+val Random random = new Random()
+val Number morning_hour=8
+val Number afternoon_hour=13
+val Number evening_hour=17
+val Number night_hour=23
+val Number morning_minute=30
+val Number afternoon_minute=30
+val Number evening_minute=30
+val Number night_minute=30
+
+val Number heating_MaximumManual=23.0
+val Number heating_MinimumHoliday=17.0
+val Number heating_MorningNormal=20.0
+val Number heating_AfternoonNormal=22.0
+val Number heating_EveningNormal=21.0
+val Number heating_NightNormal=17.0
+
+val String message_normal = "No messages to show."
+
+
+/**
+*   These rules initialize the state of managing system
+**/
+
+rule "Init managing system"
+when
+    System started
+then
+    Managing_System_Active.postUpdate(ON)
+end
+
+rule "Initialize windows_managing_timers"
+when
+    System started
+then
+    Starting_Hour_Windows_Closing.postUpdate("00")
+    Stopping_Hour_Windows_Closing.postUpdate("00")
+    Starting_Minute_Windows_Closing.postUpdate("00")
+    Stopping_Minute_Windows_Closing.postUpdate("00")
+    Starting_Hour_System_Activation.postUpdate("00")
+    Stopping_Hour_System_Activation.postUpdate("00")
+    Starting_Minute_System_Activation.postUpdate("00")
+    Stopping_Minute_System_Activation.postUpdate("00")
+end
+
+rule "Init aqi levels outdoor"
+when 
+    System started
+then
+    Simulate_OutdoorAQ.postUpdate("Good")
+end
+
+rule "Init aqi levels indoor"
+when 
+    System started
+then
+    GF_Living_AqDescription.postUpdate("GOOD")
+    GF_Kitchen_AqDescription.postUpdate("GOOD")
+    GF_Bathroom_AqDescription.postUpdate("GOOD")
+    FF_Corridor_AqDescription.postUpdate("GOOD")
+
+end
+
+
+
+/**
+*   These rules initialize the state of managed system (heating system, contacts and smoke detectors)
+**/
+rule "Initialize heating states"
+when
+    System started
+then
+    Heating?.members.forEach(heating|
+        postUpdate(heating, if (Math::random > 0.8) ON else OFF)
+    )
+end
+
+rule "Initialize contact states"
+when
+    System started   
+then
+    Windows?.members.forEach(window|
+        postUpdate(window, if (Math::random > 0.5) OPEN else CLOSED)
+    )
+    GF_Frontdoor.postUpdate(CLOSED) 
+end
+
+rule "Initialize fire states"
+when
+    System started
+then
+    Smoke?.members.forEach(smoke|
+        postUpdate(smoke, OFF)
+    )
+    gFire?.members.forEach(firealarm|
+        postUpdate(firealarm, OFF)
+    )
+end
+
+rule "Initialize Heating System Status"
+when System started
+then     
+    Heating_MaximumManual_Group.members.filter[item | item.state == NULL].forEach[item | item.postUpdate(heating_MaximumManual)]
+    Heating_MinimumHoliday_Group.members.filter[item | item.state == NULL].forEach[item | item.postUpdate(heating_MinimumHoliday)]
+    Heating_MorningNormal_Group.members.filter[item | item.state == NULL].forEach[item | item.postUpdate(heating_MorningNormal)]
+    Heating_AfternoonNormal_Group.members.filter[item | item.state == NULL].forEach[item | item.postUpdate(heating_AfternoonNormal)]
+    Heating_EveningNormal_Group.members.filter[item | item.state == NULL].forEach[item | item.postUpdate(heating_EveningNormal)]
+    Heating_NightNormal_Group.members.filter[item | item.state == NULL].forEach[item | item.postUpdate(heating_NightNormal)]
+
+    Heating_Mode.postUpdate("NORMAL")
+
+    createTimer(now.plusSeconds(180)) [ |      
+
+        var MinutesNow = now.getMinuteOfDay
+        if(MinutesNow >=((morning_hour*60)+morning_minute) && MinutesNow <((afternoon_hour*60)+afternoon_minute)){
+            GF_Heating_TempNormal.postUpdate(GF_Heating_MorningTempNormal.state as Number)
+            FF_Heating_TempNormal.postUpdate(FF_Heating_MorningTempNormal.state as Number)
+
+        }
+        else if(MinutesNow >=((afternoon_hour*60)+afternoon_minute) && MinutesNow <((evening_hour*60)+evening_minute)){
+            GF_Heating_TempNormal.postUpdate(GF_Heating_AfternoonTempNormal.state as Number)
+            FF_Heating_TempNormal.postUpdate(FF_Heating_AfternoonTempNormal.state as Number)
+        }
+        else if(MinutesNow >=((evening_hour*60)+evening_minute) && MinutesNow <((night_hour*60)+night_minute)){
+            GF_Heating_TempNormal.postUpdate(GF_Heating_EveningTempNormal.state as Number)
+            FF_Heating_TempNormal.postUpdate(FF_Heating_EveningTempNormal.state as Number)
+        }
+        else {
+            GF_Heating_TempNormal.postUpdate(GF_Heating_NightTempNormal.state as Number)
+            FF_Heating_TempNormal.postUpdate(FF_Heating_NightTempNormal.state as Number)
+        }            
+    ]
+end
+
+
+

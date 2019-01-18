@@ -1,0 +1,127 @@
+val Number FireTemperature = 45
+var Number GF_Bathroom_Temperature_Previous  
+var Number GF_Kitchen_Temperature_Previous
+var Number GF_LZone1_Temperature_Previous
+var Number GF_LZone2_Temperature_Previous    
+var Number FF_Childrenroom_Temperature_Previous    
+var Number FF_Bedroom_Temperature_Previous 
+
+
+/**
+*   Fire Managing System and Damaged sensor rules.
+*   If the temperature of a specific room is higher than 45°C the Fire_Alarm of that room is set to ON.
+*   These rules updates also the historical temperatures variables of each room.
+*   These rules allow to verify if a sensor is damaged, in that case the previous state is used for the fire control.
+*
+**/
+
+rule "Kitchen Fire Allarm and Damaged Sensor"
+when
+    Item GF_Kitchen_Temperature changed
+then
+    if(previousState != UNDEF)
+        GF_Kitchen_Temperature_Previous = previousState as Number 
+    if(Managing_System_Active.state == ON){
+        if(GF_Kitchen_Temperature.state != UNDEF){  
+            if(GF_Kitchen_Temperature.state >= FireTemperature)
+                GF_Kitchen_Fire_Alarm.sendCommand(ON)
+        }
+        else {
+            if(GF_Kitchen_Temperature_Previous >= FireTemperature)
+                GF_Kitchen_Fire_Alarm.sendCommand(ON)
+        }
+    }
+end
+
+rule "Living Zone1 Fire Allarm and Damaged Sensor"
+when
+    Item GF_LZone1_Temperature changed 
+then
+    if(previousState != UNDEF)
+        GF_LZone1_Temperature_Previous = previousState as Number
+    if(Managing_System_Active.state == ON){
+        if(GF_LZone1_Temperature.state != UNDEF){
+            if(GF_LZone1_Temperature.state >= FireTemperature && Managing_System_Active.state == ON)
+                GF_Living_Fire_Alarm.sendCommand(ON)
+        }
+        else{
+            if(GF_LZone1_Temperature_Previous >= FireTemperature && Managing_System_Active.state == ON)
+                GF_Living_Fire_Alarm.sendCommand(ON)
+        }
+    }
+end
+
+rule "Living Zone2 Fire Allarm and Damaged Sensor"
+when
+    Item GF_LZone2_Temperature changed
+then
+    if(previousState != UNDEF)
+        GF_LZone2_Temperature_Previous = previousState as Number
+    if(Managing_System_Active.state == ON){
+        if(GF_LZone2_Temperature.state != UNDEF){
+            if(GF_LZone2_Temperature.state >= FireTemperature && Managing_System_Active.state == ON)
+                GF_Living_Fire_Alarm.sendCommand(ON)
+        }
+        else{
+            if(GF_LZone2_Temperature_Previous >= FireTemperature && Managing_System_Active.state == ON)
+                GF_Living_Fire_Alarm.sendCommand(ON)
+        }
+    }
+end
+
+rule "Bathroom Fire Alarm and Damaged Sensor"
+when
+    Item GF_Bathroom_Temperature changed 
+then
+    if(previousState != UNDEF)
+        GF_Bathroom_Temperature_Previous = previousState as Number
+    if(Managing_System_Active.state == ON){
+        if(GF_Bathroom_Temperature.state != UNDEF){
+            if(GF_Bathroom_Temperature.state >= FireTemperature && Managing_System_Active.state == ON)
+                GF_Bathroom_Fire_Alarm.sendCommand(ON)
+        }
+        else{
+            if(GF_Bathroom_Temperature_Previous >= FireTemperature)
+                GF_Bathroom_Fire_Alarm.sendCommand(ON)
+        }
+    }
+        
+end
+
+rule "Bedroom Fire Alarm and Damaged Sensor"
+when
+    Item FF_Bedroom_Temperature changed
+then
+    if(previousState != UNDEF)
+        FF_Bedroom_Temperature_Previous = previousState as Number
+    if(Managing_System_Active.state == ON){
+        if(FF_Bedroom_Temperature.state != UNDEF){
+            if(FF_Bedroom_Temperature.state >= FireTemperature)
+                FF_Bedroom_Fire_Alarm.sendCommand(ON)
+        }
+        else{
+            if(FF_Bedroom_Temperature_Previous >= FireTemperature)
+                FF_Bedroom_Fire_Alarm.sendCommand(ON)
+        }
+    }
+end
+
+rule "Children Bedroom Fire Alarm and Damaged Sensor"
+when
+    Item FF_Childrenroom_Temperature changed
+then
+    if(previousState != UNDEF)
+        FF_Childrenroom_Temperature_Previous = previousState as Number
+    if(Managing_System_Active.state == ON){
+        if(FF_Childrenroom_Temperature.state != UNDEF){
+            if(FF_Childrenroom_Temperature.state >= FireTemperature)
+                FF_Children_Bedroom_Fire_Alarm.sendCommand(ON)
+        }
+        else{
+            if(FF_Childrenroom_Temperature_Previous >= FireTemperature)
+                FF_Children_Bedroom_Fire_Alarm.sendCommand(ON)
+        }
+    }
+end
+
+

@@ -1,0 +1,222 @@
+import java.util.Random
+val Random random = new Random()
+
+/**
+* Variables limits outside air quality
+**/
+//PM10
+val Number GoodOutsidePM10Min = 0
+val Number GoodOutsidePM10Max = 0.054
+val Number ModerateOutsidePM10Min = 0.055
+val Number ModerateOutsidePM10Max = 0.154
+val Number UnhealthyOutsidePM10Min = 0.155
+val Number UnhealthyOutsidePM10Max = 0.424
+val Number HazardousOutsidePM10Min = 0.425
+val Number HazardousOutsidePM10Max = 0.640
+
+/**
+* Variables limits indoor air quality
+**/
+val Number GoodInsideCO2Min = 340
+val Number GoodInsideCO2Max = 600
+val Number ModerateInsideCO2Min = 601
+val Number ModerateInsideCO2Max = 1000
+val Number UnhealthyInsideCO2Min = 1001
+val Number UnhealthyInsideCO2Max = 1500
+val Number HazardousInsideCO2Min = 1501
+val Number HazardousInsideCO2Max = 5000
+
+val Number GoodInsidePM10Min = 0
+val Number GoodInsidePM10Max = 0.02
+val Number ModerateInsidePM10Min = 0.021
+val Number ModerateInsidePM10Max = 0.150
+val Number UnhealthyInsidePM10Min = 0.151
+val Number UnhealthyInsidePM10Max = 0.180
+val Number HazardousInsidePM10Min = 0.181
+val Number HazardousInsidePM10Max = 0.600
+
+val Number GoodInsideVOCMin = 0
+val Number GoodInsideVOCMax = 0.087
+val Number ModerateInsideVOCMin = 0.088
+val Number ModerateInsideVOCMax = 0.261
+val Number UnhealthyInsideVOCMin = 0.262
+val Number UnhealthyInsideVOCMax = 0.43
+val Number HazardousInsideVOCMin = 0.44
+val Number HazardousInsideVOCMax = 3
+
+val Number GoodInsideRhMin = 40
+val Number GoodInsideRhMax = 70
+val Number ModerateInsideRhMin = 70.1
+val Number ModerateInsideRhMax = 80
+val Number UnhealthyInsideRhMin = 80.1
+val Number UnhealthyInsideRhMax = 90
+val Number HazardousInsideRhMin = 90.1
+val Number HazardousInsideRhMax = 100
+
+
+/**
+*   Simulation temperatures changes in each room of the house.
+**/
+rule "Set random room temperatures"
+when
+    System started or 
+    Time cron "0/30 0/1 * 1/1 * ? *"  //Fire every 30 seconds (change to "0 0/1 * * * ?" to fire every minute)
+then
+    Temperature?.members.forEach(temperature|
+        postUpdate(temperature, 20.0 + (25.0 - (Math::random * 50.0).intValue) / 10.0)
+    )
+end
+
+/**
+*   Simulation aqi indoor
+**/
+rule "Set random aqi index in each room"
+when 
+    Time cron "0/30 0/1 * 1/1 * ? *" //Fire every 30 seconds (change to "0 0/1 * * * ?" to fire every minute) 
+then
+        if(GF_Living_AqDescription.state == "GOOD"){
+            GF_Living_AqCO2.postUpdate(Math::floor((Math::random * (GoodInsideCO2Max-GoodInsideCO2Min) + GoodInsideCO2Min).doubleValue).intValue)
+            GF_Living_AqPm10.postUpdate(Math::floor((((Math::random * (GoodInsidePM10Max-GoodInsidePM10Min)) + GoodInsidePM10Min)*1000).doubleValue)/1000)
+            GF_Living_AqVoc.postUpdate(Math::floor((((Math::random * (GoodInsideVOCMax-GoodInsideVOCMin)) + GoodInsideVOCMin)*1000).doubleValue)/1000)
+            GF_Living_AqRh.postUpdate(Math::floor((Math::random * (GoodInsideRhMax-GoodInsideRhMin) + GoodInsideRhMin).doubleValue).intValue)
+            GF_Living_AqDescription.postUpdate("GOOD")
+        }
+        if(GF_Living_AqDescription.state == "MODERATE"){
+            GF_Living_AqCO2.postUpdate(Math::floor((Math::random * (ModerateInsideCO2Max-ModerateInsideCO2Min) + ModerateInsideCO2Min).doubleValue).intValue)
+            GF_Living_AqPm10.postUpdate(Math::floor((((Math::random * (ModerateInsidePM10Max-ModerateInsidePM10Min)) + ModerateInsidePM10Min)*1000).doubleValue)/1000)
+            GF_Living_AqVoc.postUpdate(Math::floor((((Math::random * (ModerateInsideVOCMax-ModerateInsideVOCMin)) + ModerateInsideVOCMin)*1000).doubleValue)/1000)
+            GF_Living_AqRh.postUpdate(Math::floor((Math::random * (ModerateInsideRhMax-ModerateInsideRhMin) + ModerateInsideRhMin).doubleValue).intValue)
+            GF_Living_AqDescription.postUpdate("MODERATE")
+        }
+        if(GF_Living_AqDescription.state == "UNHEALTHY"){
+            GF_Living_AqCO2.postUpdate(Math::floor((Math::random * (UnhealthyInsideCO2Max-UnhealthyInsideCO2Min) + UnhealthyInsideCO2Min).doubleValue).intValue)
+            GF_Living_AqPm10.postUpdate(Math::floor((((Math::random * (UnhealthyInsidePM10Max-UnhealthyInsidePM10Min)) + UnhealthyInsidePM10Min)*1000).doubleValue)/1000)
+            GF_Living_AqVoc.postUpdate(Math::floor((((Math::random * (UnhealthyInsideVOCMax-UnhealthyInsideVOCMin)) + UnhealthyInsideVOCMin)*1000).doubleValue)/1000)
+            GF_Living_AqRh.postUpdate(Math::floor((Math::random * (UnhealthyInsideRhMax-UnhealthyInsideRhMin) + UnhealthyInsideRhMin).doubleValue).intValue)
+            GF_Living_AqDescription.postUpdate("UNHEALTHY")
+        }
+        if(GF_Living_AqDescription.state == "HAZARDOUS"){
+            GF_Living_AqCO2.postUpdate(Math::floor((Math::random * (HazardousInsideCO2Max-HazardousInsideCO2Min) + HazardousInsideCO2Min).doubleValue).intValue)
+            GF_Living_AqPm10.postUpdate(Math::floor((((Math::random * (HazardousInsidePM10Max-HazardousInsidePM10Min)) + HazardousInsidePM10Min)*1000).doubleValue)/1000)
+            GF_Living_AqVoc.postUpdate(Math::floor((((Math::random * (HazardousInsideVOCMax-HazardousInsideVOCMin)) + HazardousInsideVOCMin)*1000).doubleValue)/1000)
+            GF_Living_AqRh.postUpdate(Math::floor((Math::random * (HazardousInsideRhMax-HazardousInsideRhMin) + HazardousInsideRhMin).doubleValue).intValue)
+            GF_Living_AqDescription.postUpdate("HAZARDOUS")
+        }
+
+
+        if(GF_Kitchen_AqDescription.state == "GOOD"){
+            GF_Kitchen_AqCO2.postUpdate(Math::floor((Math::random * (GoodInsideCO2Max-GoodInsideCO2Min) + GoodInsideCO2Min).doubleValue).intValue)
+            GF_Kitchen_AqPm10.postUpdate(Math::floor((((Math::random * (GoodInsidePM10Max-GoodInsidePM10Min)) + GoodInsidePM10Min)*1000).doubleValue)/1000)
+            GF_Kitchen_AqVoc.postUpdate(Math::floor((((Math::random * (GoodInsideVOCMax-GoodInsideVOCMin)) + GoodInsideVOCMin)*1000).doubleValue)/1000)
+            GF_Kitchen_AqRh.postUpdate(Math::floor((Math::random * (GoodInsideRhMax-GoodInsideRhMin) + GoodInsideRhMin).doubleValue).intValue)
+            GF_Kitchen_AqDescription.postUpdate("GOOD")
+        }
+        if(GF_Kitchen_AqDescription.state == "MODERATE"){
+            GF_Kitchen_AqCO2.postUpdate(Math::floor((Math::random * (ModerateInsideCO2Max-ModerateInsideCO2Min) + ModerateInsideCO2Min).doubleValue).intValue)
+            GF_Kitchen_AqPm10.postUpdate(Math::floor((((Math::random * (ModerateInsidePM10Max-ModerateInsidePM10Min)) + ModerateInsidePM10Min)*1000).doubleValue)/1000)
+            GF_Kitchen_AqVoc.postUpdate(Math::floor((((Math::random * (ModerateInsideVOCMax-ModerateInsideVOCMin)) + ModerateInsideVOCMin)*1000).doubleValue)/1000)
+            GF_Kitchen_AqRh.postUpdate(Math::floor((Math::random * (ModerateInsideRhMax-ModerateInsideRhMin) + ModerateInsideRhMin).doubleValue).intValue)
+            GF_Kitchen_AqDescription.postUpdate("MODERATE")
+        }
+        if(GF_Kitchen_AqDescription.state == "UNHEALTHY"){
+            GF_Kitchen_AqCO2.postUpdate(Math::floor((Math::random * (UnhealthyInsideCO2Max-UnhealthyInsideCO2Min) + UnhealthyInsideCO2Min).doubleValue).intValue)
+            GF_Kitchen_AqPm10.postUpdate(Math::floor((((Math::random * (UnhealthyInsidePM10Max-UnhealthyInsidePM10Min)) + UnhealthyInsidePM10Min)*1000).doubleValue)/1000)
+            GF_Kitchen_AqVoc.postUpdate(Math::floor((((Math::random * (UnhealthyInsideVOCMax-UnhealthyInsideVOCMin)) + UnhealthyInsideVOCMin)*1000).doubleValue)/1000)
+            GF_Kitchen_AqRh.postUpdate(Math::floor((Math::random * (UnhealthyInsideRhMax-UnhealthyInsideRhMin) + UnhealthyInsideRhMin).doubleValue).intValue)
+            GF_Kitchen_AqDescription.postUpdate("UNHEALTHY")
+        }
+        if(GF_Kitchen_AqDescription.state == "HAZARDOUS"){
+            GF_Kitchen_AqCO2.postUpdate(Math::floor((Math::random * (HazardousInsideCO2Max-HazardousInsideCO2Min) + HazardousInsideCO2Min).doubleValue).intValue)
+            GF_Kitchen_AqPm10.postUpdate(Math::floor((((Math::random * (HazardousInsidePM10Max-HazardousInsidePM10Min)) + HazardousInsidePM10Min)*1000).doubleValue)/1000)
+            GF_Kitchen_AqVoc.postUpdate(Math::floor((((Math::random * (HazardousInsideVOCMax-HazardousInsideVOCMin)) + HazardousInsideVOCMin)*1000).doubleValue)/1000)
+            GF_Kitchen_AqRh.postUpdate(Math::floor((Math::random * (HazardousInsideRhMax-HazardousInsideRhMin) + HazardousInsideRhMin).doubleValue).intValue)
+            GF_Kitchen_AqDescription.postUpdate("HAZARDOUS")
+        }
+
+
+        if(GF_Bathroom_AqDescription.state == "GOOD"){
+            GF_Bathroom_AqCO2.postUpdate(Math::floor((Math::random * (GoodInsideCO2Max-GoodInsideCO2Min) + GoodInsideCO2Min).doubleValue).intValue)
+            GF_Bathroom_AqPm10.postUpdate(Math::floor((((Math::random * (GoodInsidePM10Max-GoodInsidePM10Min)) + GoodInsidePM10Min)*1000).doubleValue)/1000)
+            GF_Bathroom_AqVoc.postUpdate(Math::floor((((Math::random * (GoodInsideVOCMax-GoodInsideVOCMin)) + GoodInsideVOCMin)*1000).doubleValue)/1000)
+            GF_Bathroom_AqRh.postUpdate(Math::floor((Math::random * (GoodInsideRhMax-GoodInsideRhMin) + GoodInsideRhMin).doubleValue).intValue)
+            GF_Bathroom_AqDescription.postUpdate("GOOD")
+        }
+        if(GF_Bathroom_AqDescription.state == "MODERATE"){
+            GF_Bathroom_AqCO2.postUpdate(Math::floor((Math::random * (ModerateInsideCO2Max-ModerateInsideCO2Min) + ModerateInsideCO2Min).doubleValue).intValue)
+            GF_Bathroom_AqPm10.postUpdate(Math::floor((((Math::random * (ModerateInsidePM10Max-ModerateInsidePM10Min)) + ModerateInsidePM10Min)*1000).doubleValue)/1000)
+            GF_Bathroom_AqVoc.postUpdate(Math::floor((((Math::random * (ModerateInsideVOCMax-ModerateInsideVOCMin)) + ModerateInsideVOCMin)*1000).doubleValue)/1000)
+            GF_Bathroom_AqRh.postUpdate(Math::floor((Math::random * (ModerateInsideRhMax-ModerateInsideRhMin) + ModerateInsideRhMin).doubleValue).intValue)
+            GF_Bathroom_AqDescription.postUpdate("MODERATE")
+        }
+        if(GF_Bathroom_AqDescription.state == "UNHEALTHY"){
+            GF_Bathroom_AqCO2.postUpdate(Math::floor((Math::random * (UnhealthyInsideCO2Max-UnhealthyInsideCO2Min) + UnhealthyInsideCO2Min).doubleValue).intValue)
+            GF_Bathroom_AqPm10.postUpdate(Math::floor((((Math::random * (UnhealthyInsidePM10Max-UnhealthyInsidePM10Min)) + UnhealthyInsidePM10Min)*1000).doubleValue)/1000)
+            GF_Bathroom_AqVoc.postUpdate(Math::floor((((Math::random * (UnhealthyInsideVOCMax-UnhealthyInsideVOCMin)) + UnhealthyInsideVOCMin)*1000).doubleValue)/1000)
+            GF_Bathroom_AqRh.postUpdate(Math::floor((Math::random * (UnhealthyInsideRhMax-UnhealthyInsideRhMin) + UnhealthyInsideRhMin).doubleValue).intValue)
+            GF_Bathroom_AqDescription.postUpdate("UNHEALTHY")
+        }
+        if(GF_Bathroom_AqDescription.state == "HAZARDOUS"){
+            GF_Bathroom_AqCO2.postUpdate(Math::floor((Math::random * (HazardousInsideCO2Max-HazardousInsideCO2Min) + HazardousInsideCO2Min).doubleValue).intValue)
+            GF_Bathroom_AqPm10.postUpdate(Math::floor((((Math::random * (HazardousInsidePM10Max-HazardousInsidePM10Min)) + HazardousInsidePM10Min)*1000).doubleValue)/1000)
+            GF_Bathroom_AqVoc.postUpdate(Math::floor((((Math::random * (HazardousInsideVOCMax-HazardousInsideVOCMin)) + HazardousInsideVOCMin)*1000).doubleValue)/1000)
+            GF_Bathroom_AqRh.postUpdate(Math::floor((Math::random * (HazardousInsideRhMax-HazardousInsideRhMin) + HazardousInsideRhMin).doubleValue).intValue)
+            GF_Bathroom_AqDescription.postUpdate("HAZARDOUS")
+        }
+
+
+        if(FF_Corridor_AqDescription.state == "GOOD"){
+            FF_Corridor_AqCO2.postUpdate(Math::floor((Math::random * (GoodInsideCO2Max-GoodInsideCO2Min) + GoodInsideCO2Min).doubleValue).intValue)
+            FF_Corridor_AqPm10.postUpdate(Math::floor((((Math::random * (GoodInsidePM10Max-GoodInsidePM10Min)) + GoodInsidePM10Min)*1000).doubleValue)/1000)
+            FF_Corridor_AqVoc.postUpdate(Math::floor((((Math::random * (GoodInsideVOCMax-GoodInsideVOCMin)) + GoodInsideVOCMin)*1000).doubleValue)/1000)
+            FF_Corridor_AqRh.postUpdate(Math::floor((Math::random * (GoodInsideRhMax-GoodInsideRhMin) + GoodInsideRhMin).doubleValue).intValue)
+            FF_Corridor_AqDescription.postUpdate("GOOD")
+        }
+        if(FF_Corridor_AqDescription.state == "MODERATE"){
+            FF_Corridor_AqCO2.postUpdate(Math::floor((Math::random * (ModerateInsideCO2Max-ModerateInsideCO2Min) + ModerateInsideCO2Min).doubleValue).intValue)
+            FF_Corridor_AqPm10.postUpdate(Math::floor((((Math::random * (ModerateInsidePM10Max-ModerateInsidePM10Min)) + ModerateInsidePM10Min)*1000).doubleValue)/1000)
+            FF_Corridor_AqVoc.postUpdate(Math::floor((((Math::random * (ModerateInsideVOCMax-ModerateInsideVOCMin)) + ModerateInsideVOCMin)*1000).doubleValue)/1000)
+            FF_Corridor_AqRh.postUpdate(Math::floor((Math::random * (ModerateInsideRhMax-ModerateInsideRhMin) + ModerateInsideRhMin).doubleValue).intValue)
+            FF_Corridor_AqDescription.postUpdate("MODERATE")
+        }
+        if(FF_Corridor_AqDescription.state == "UNHEALTHY"){
+            FF_Corridor_AqCO2.postUpdate(Math::floor((Math::random * (UnhealthyInsideCO2Max-UnhealthyInsideCO2Min) + UnhealthyInsideCO2Min).doubleValue).intValue)
+            FF_Corridor_AqPm10.postUpdate(Math::floor((((Math::random * (UnhealthyInsidePM10Max-UnhealthyInsidePM10Min)) + UnhealthyInsidePM10Min)*1000).doubleValue)/1000)
+            FF_Corridor_AqVoc.postUpdate(Math::floor((((Math::random * (UnhealthyInsideVOCMax-UnhealthyInsideVOCMin)) + UnhealthyInsideVOCMin)*1000).doubleValue)/1000)
+            FF_Corridor_AqRh.postUpdate(Math::floor((Math::random * (UnhealthyInsideRhMax-UnhealthyInsideRhMin) + UnhealthyInsideRhMin).doubleValue).intValue)
+            FF_Corridor_AqDescription.postUpdate("UNHEALTHY")
+        }
+        if(FF_Corridor_AqDescription.state == "HAZARDOUS"){
+            FF_Corridor_AqCO2.postUpdate(Math::floor((Math::random * (HazardousInsideCO2Max-HazardousInsideCO2Min) + HazardousInsideCO2Min).doubleValue).intValue)
+            FF_Corridor_AqPm10.postUpdate(Math::floor((((Math::random * (HazardousInsidePM10Max-HazardousInsidePM10Min)) + HazardousInsidePM10Min)*1000).doubleValue)/1000)
+            FF_Corridor_AqVoc.postUpdate(Math::floor((((Math::random * (HazardousInsideVOCMax-HazardousInsideVOCMin)) + HazardousInsideVOCMin)*1000).doubleValue)/1000)
+            FF_Corridor_AqRh.postUpdate(Math::floor((Math::random * (HazardousInsideRhMax-HazardousInsideRhMin) + HazardousInsideRhMin).doubleValue).intValue)
+            FF_Corridor_AqDescription.postUpdate("HAZARDOUS")
+        }
+end
+
+
+
+/**
+*   External Simulation
+**/
+rule "Air Simulation"
+when
+    Time cron "0/30 0/1 * 1/1 * ? *" //Fire every 30 seconds (change to "0 0/1 * * * ?" to fire every minute) 
+then
+        if(Simulate_OutdoorAQ.state == "Good"){
+            SimOutsideAqi_Description.postUpdate("GOOD")
+            SimAqi_Pm10.postUpdate(Math::floor((((Math::random * (GoodOutsidePM10Max-GoodOutsidePM10Min)) + GoodOutsidePM10Min)*1000).doubleValue)/1000)
+        }
+        if(Simulate_OutdoorAQ.state == "Moderate"){
+            SimOutsideAqi_Description.postUpdate("MODERATE")
+            SimAqi_Pm10.postUpdate(Math::floor((((Math::random * (ModerateOutsidePM10Max-ModerateOutsidePM10Min)) + ModerateOutsidePM10Min)*1000).doubleValue)/1000)
+        }
+        if(Simulate_OutdoorAQ.state == "Unhealthy"){
+            SimOutsideAqi_Description.postUpdate("UNHEALTHY")
+            SimAqi_Pm10.postUpdate(Math::floor((((Math::random * (UnhealthyOutsidePM10Max-UnhealthyOutsidePM10Min)) + UnhealthyOutsidePM10Min)*1000).doubleValue)/1000)
+        }
+        if(Simulate_OutdoorAQ.state == "Hazardous"){
+            SimOutsideAqi_Description.postUpdate("HAZARDOUS")
+            SimAqi_Pm10.postUpdate(Math::floor((((Math::random * (HazardousOutsidePM10Max-HazardousOutsidePM10Min)) + HazardousOutsidePM10Min)*1000).doubleValue)/1000)
+        }
+end

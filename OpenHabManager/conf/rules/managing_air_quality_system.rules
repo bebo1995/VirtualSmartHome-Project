@@ -1,0 +1,127 @@
+import java.util.Random
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Calendar
+import java.text.DateFormat
+val Random random = new Random()
+/**
+* Variables limits indoor air quality
+**/
+val Number GoodInsideCO2Min = 340
+val Number GoodInsideCO2Max = 600
+val Number ModerateInsideCO2Min = 601
+val Number ModerateInsideCO2Max = 1000
+val Number UnhealthyInsideCO2Min = 1001
+val Number UnhealthyInsideCO2Max = 1500
+val Number HazardousInsideCO2Min = 1501
+val Number HazardousInsideCO2Max = 5000
+
+val Number GoodInsidePM10Min = 0
+val Number GoodInsidePM10Max = 0.02
+val Number ModerateInsidePM10Min = 0.021
+val Number ModerateInsidePM10Max = 0.150
+val Number UnhealthyInsidePM10Min = 0.151
+val Number UnhealthyInsidePM10Max = 0.180
+val Number HazardousInsidePM10Min = 0.181
+val Number HazardousInsidePM10Max = 0.600
+
+val Number GoodInsideVOCMin = 0
+val Number GoodInsideVOCMax = 0.087
+val Number ModerateInsideVOCMin = 0.088
+val Number ModerateInsideVOCMax = 0.261
+val Number UnhealthyInsideVOCMin = 0.262
+val Number UnhealthyInsideVOCMax = 0.43
+val Number HazardousInsideVOCMin = 0.44
+val Number HazardousInsideVOCMax = 3
+
+val Number GoodInsideRhMin = 40
+val Number GoodInsideRhMax = 70
+val Number ModerateInsideRhMin = 70.1
+val Number ModerateInsideRhMax = 80
+val Number UnhealthyInsideRhMin = 80.1
+val Number UnhealthyInsideRhMax = 90
+val Number HazardousInsideRhMin = 90.1
+val Number HazardousInsideRhMax = 100
+
+//support variables
+var String currentHour
+var String currentMinute
+var String startingClosingTime
+var String stoppingClosingTime
+var String startingSystemActivationTime
+var String stoppingSystemActivationTime
+var String currentDay
+var Date startingClosingDate
+var Date stoppingClosingDate
+var Date startingActivationDate
+var Date stoppingActivationDate
+var Date currentDate
+var DateFormat datos
+
+rule "Managing Windows System"
+
+when
+    Item Starting_Hour_Windows_Closing changed or
+    Item Starting_Minute_Windows_Closing changed or
+    Item Stopping_Hour_Windows_Closing changed or
+    Item Stopping_Minute_Windows_Closing changed or
+    Item Starting_Hour_System_Activation changed or
+    Item Starting_Minute_System_Activation changed or
+    Item Stopping_Hour_System_Activation changed or
+    Item Stopping_Minute_System_Activation changed or
+    Time cron "0/10 0/1 * 1/1 * ? *" //Fire every 10 seconds (change to "0 0/1 * * * ?" to fire every minute) 
+
+then
+    datos = new SimpleDateFormat ("yyyy-MM-dd HH:mm:ss")
+    currentDate = new Date()
+    currentDay = Calendar.getInstance().get(Calendar.YEAR).toString() + "-" + (Calendar.getInstance().get(Calendar.MONTH)+1).toString() + "-" + Calendar.getInstance().get(Calendar.DAY_OF_MONTH).toString()
+    startingClosingTime = currentDay + " " + Starting_Hour_Windows_Closing.state.toString + ":" + Starting_Hour_Windows_Closing.state.toString + ":00"
+    stoppingClosingTime = currentDay + " " + Stopping_Hour_Windows_Closing.state.toString + ":" + Stopping_Hour_Windows_Closing.state.toString + ":00"
+    startingSystemActivationTime = currentDay + " " + Starting_Hour_System_Activation.state.toString + ":" + Starting_Hour_System_Activation.state.toString + ":00"
+    stoppingSystemActivationTime = currentDay + " " + Stopping_Hour_System_Activation.state.toString + ":" + Stopping_Hour_System_Activation.state.toString + ":00"
+    startingClosingDate = datos.parse(startingClosingTime)
+    stoppingClosingDate = datos.parse(stoppingClosingTime)
+    startingActivationDate = datos.parse(startingSystemActivationTime)
+    stoppingActivationDate = datos.parse(stoppingSystemActivationTime)
+
+  if(Managing_System_Active.state == ON){
+        if (!(currentDate.after(startingClosingDate) && currentDate.before(stoppingClosingDate)) && !(currentDate.after(startingActivationDate) && currentDate.before(stoppingActivationDate))){
+            if((SimAqi_Pm10.state as DecimalType).doubleValue > UnhealthyInsidePM10Min){
+                GF_Living_Window.postUpdate("CLOSED")
+                GF_Kitchen_Window.postUpdate("CLOSED")
+                GF_Bathroom_Window.postUpdate("CLOSED")
+                FF_Bedroom_Window.postUpdate("CLOSED")
+                FF_ChildrenRoom_Window.postUpdate("CLOSED")
+            }
+            else{
+                if((GF_Living_AqPm10.state as DecimalType).doubleValue > (SimAqi_Pm10.state as DecimalType).doubleValue){
+                    GF_Living_Window.postUpdate("OPEN")
+                }
+                else{
+                    GF_Living_Window.postUpdate("CLOSED")
+                }
+                if((GF_Bathroom_AqPm10.state as DecimalType).doubleValue > (SimAqi_Pm10.state as DecimalType).doubleValue){
+                    GF_Bathroom_Window.postUpdate("OPEN")
+                }
+                else{
+                    GF_Bathroom_Window.postUpdate("CLOSED")
+                }
+                if((GF_Kitchen_AqPm10.state as DecimalType).doubleValue > (SimAqi_Pm10.state as DecimalType).doubleValue){
+                    GF_Kitchen_Window.postUpdate("OPEN")
+                }
+                else{
+                    GF_Kitchen_Window.postUpdate("CLOSED")
+                }
+                if((FF_Corridor_AqPm10.state as DecimalType).doubleValue > (SimAqi_Pm10.state as DecimalType).doubleValue){
+                    FF_Bedroom_Window.postUpdate("OPEN")
+                    FF_ChildrenRoom_Window.postUpdate("OPEN")
+                }
+                else{
+                    FF_Bedroom_Window.postUpdate("CLOSED")
+                    FF_ChildrenRoom_Window.postUpdate("CLOSED")
+                }
+            }
+        }
+    
+}
+end

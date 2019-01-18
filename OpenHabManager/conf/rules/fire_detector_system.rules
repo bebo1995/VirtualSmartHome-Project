@@ -1,0 +1,69 @@
+
+val String sound_to_play = "firealarm.mp3"
+
+/**
+* Fire detector managed system rules. If the Smoke detectors detects a fire the Fire alarm is setted to ON.
+*
+**/
+
+rule "Kitchen Fire Allarm"
+when
+    Item GF_Kitchen_Smoke changed from OFF to ON 
+then
+        GF_Kitchen_Fire_Alarm.sendCommand(ON)
+end
+
+rule "Living Fire Allarm"
+when
+    Item GF_Living_Smoke changed from OFF to ON     
+then
+        GF_Living_Fire_Alarm.sendCommand(ON)
+end
+
+rule "Corridor Fire Allarm"
+when
+    Item FF_Corridor_Smoke changed from OFF to ON
+then
+    FF_Corridor_Fire_Alarm.sendCommand(ON)
+end
+
+/**
+*   This rules manage the sound of the fire alarm in each room.
+**/
+
+rule "Sound Fire Alarm Ground Floor"
+when 
+    Item GF_Living_Fire_Alarm changed from OFF to ON or
+    Item GF_Kitchen_Fire_Alarm changed from OFF to ON or
+    Item GF_Bathroom_Fire_Alarm changed from OFF to ON 
+then
+    setMasterVolume( new PercentType(50))
+    playSound(sound_to_play, new PercentType(50))
+end
+
+rule "Sound Fire Alarm First Floor"
+when 
+    Item FF_Corridor_Fire_Alarm changed from OFF to ON or
+    Item FF_Bedroom_Fire_Alarm changed from OFF to ON or
+    Item FF_Children_Bedroom_Fire_Alarm changed from OFF to ON 
+then
+    setMasterVolume( new PercentType(50))
+    playSound(sound_to_play, new PercentType(50))
+end
+
+rule "Stop sound Fire Alarm"
+when 
+    Item GF_Living_Fire_Alarm changed from ON to OFF or
+    Item GF_Kitchen_Fire_Alarm changed from ON to OFF or
+    Item GF_Bathroom_Fire_Alarm changed from ON to OFF or
+    Item FF_Corridor_Fire_Alarm changed from ON to OFF or
+    Item FF_Bedroom_Fire_Alarm changed from ON to OFF or
+    Item FF_Children_Bedroom_Fire_Alarm changed from ON to OFF 
+then
+    if(GF_Living_Fire_Alarm.state != ON && GF_Kitchen_Fire_Alarm.state!= ON && GF_Bathroom_Fire_Alarm.state != ON){
+        if(FF_Corridor_Fire_Alarm.state != ON && FF_Bedroom_Fire_Alarm.state != ON && FF_Children_Bedroom_Fire_Alarm.state != ON){
+            setMasterVolume( new PercentType(0))
+        }
+    }
+
+end

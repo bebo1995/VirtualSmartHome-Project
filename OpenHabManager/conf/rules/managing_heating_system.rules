@@ -1,0 +1,118 @@
+
+val Number Hysteresis = 0.3
+
+/**Thermostat behaviour rules: 
+* these rules manage the behaviour of a heating system, start and stop each radiator
+* based on the temperature reached in the room and the target temperature
+**/
+rule "Reach Target LivingRoom Zone1 GF"
+when 
+    Item Managing_System_Active changed or 
+    Item GF_Temperature_Setpoint changed or
+    Time cron "0/5 0/1 * 1/1 * ? *" //Fire the control every 5 seconds
+then 
+    if(Managing_System_Active.state == ON){
+        var Number Current_Temp=GF_LZone1_Temperature.state as Number
+        var Number Target_Temp= GF_Temperature_Setpoint.state as Number 
+    
+        if(Heating_Mode.state!='STOP' &&(Current_Temp < (Target_Temp-Hysteresis)) && GF_Living_heating1.state!=ON){
+            GF_Living_heating1.sendCommand(ON)
+        }   
+        if(Heating_Mode.state!='STOP' && (Current_Temp > (Target_Temp+Hysteresis)) && GF_Living_heating1.state!=OFF)
+            GF_Living_heating1.sendCommand(OFF)
+    }
+    
+end
+
+rule "Reach Target LivingRoom Zone2 GF"
+when 
+    Item Managing_System_Active changed or 
+    Item GF_Temperature_Setpoint changed or
+    Time cron "0/5 0/1 * 1/1 * ? *" //Fire the control every 5 seconds
+then 
+    if(Managing_System_Active.state == ON){
+        var Number Current_Temp=GF_LZone2_Temperature.state as Number
+        var Number Target_Temp= GF_Temperature_Setpoint.state as Number 
+
+        if(Heating_Mode.state!='STOP' &&(Current_Temp < (Target_Temp-Hysteresis)) && GF_Living_heating2.state!=ON){
+            GF_Living_heating2.sendCommand(ON)
+        }   
+        if(Heating_Mode.state!='STOP' && (Current_Temp > (Target_Temp+Hysteresis)) && GF_Living_heating2.state!=OFF)
+            GF_Living_heating2.sendCommand(OFF)
+    }
+end
+
+rule "Reach Target Bathroom GF"
+when 
+    Item Managing_System_Active changed or 
+    Item GF_Temperature_Setpoint changed or
+    Time cron "0/5 0/1 * 1/1 * ? *" //Fire the control every 5 seconds
+then 
+    if(Managing_System_Active.state == ON){
+        var Number Current_Temp=GF_Bathroom_Temperature.state as Number
+        var Number Target_Temp= GF_Temperature_Setpoint.state as Number 
+
+        if(Heating_Mode.state!='STOP' &&(Current_Temp < (Target_Temp-Hysteresis)) && GF_Bathroom_heating.state!=ON){
+            GF_Bathroom_heating.sendCommand(ON)
+        }   
+        if(Heating_Mode.state!='STOP' && (Current_Temp > (Target_Temp+Hysteresis)) && GF_Bathroom_heating.state!=OFF)
+            GF_Bathroom_heating.sendCommand(OFF)
+    }
+end
+
+rule "Reach Target Kitchen GF"
+when 
+    Item Managing_System_Active changed or 
+    Item GF_Temperature_Setpoint changed or
+    Time cron "0/5 0/1 * 1/1 * ? *" //Fire the control every 5 seconds
+then 
+    if(Managing_System_Active.state == ON){
+        var Number Current_Temp=GF_Kitchen_Temperature.state as Number
+        var Number Target_Temp= GF_Temperature_Setpoint.state as Number 
+
+        if(Heating_Mode.state!='STOP' &&(Current_Temp < (Target_Temp-Hysteresis)) && GF_Kitchen_heating.state!=ON){
+            GF_Kitchen_heating.sendCommand(ON)
+        }   
+        if(Heating_Mode.state!='STOP' && (Current_Temp > (Target_Temp+Hysteresis)) && GF_Kitchen_heating.state!=OFF)
+            GF_Kitchen_heating.sendCommand(OFF)
+    }
+end
+
+rule "Reach Target Bedroom FF"
+when 
+    Item Managing_System_Active changed or 
+    Item FF_Temperature_Setpoint changed or
+    Time cron "0/5 0/1 * 1/1 * ? *" //Fire the control every 5 seconds
+then 
+    if(Managing_System_Active.state == ON){
+        var Number Current_Temp=FF_Bedroom_Temperature.state as Number
+        var Number Target_Temp= FF_Temperature_Setpoint.state as Number 
+    
+        if(Heating_Mode.state!='STOP' &&(Current_Temp < (Target_Temp-Hysteresis)) && FF_Bedroom_heating.state!=ON){
+            FF_Bedroom_heating.sendCommand(ON)
+        }   
+        if(Heating_Mode.state!='STOP' && (Current_Temp > (Target_Temp+Hysteresis)) && FF_Bedroom_heating.state!=OFF)
+            FF_Bedroom_heating.sendCommand(OFF)
+    }
+end
+
+rule "Reach Target Childrenroom FF"
+when 
+    Item Managing_System_Active changed or 
+    Item FF_Temperature_Setpoint changed or
+    Time cron "0/5 0/1 * 1/1 * ? *" //Fire the control every 5 seconds
+then
+    if(Managing_System_Active.state == ON){ 
+        var Number Current_Temp=FF_Childrenroom_Temperature.state as Number
+        var Number Target_Temp= FF_Temperature_Setpoint.state as Number 
+    
+        if(Heating_Mode.state!='STOP' &&(Current_Temp < (Target_Temp-Hysteresis)) && FF_Childrenroom_heating.state!=ON){
+            FF_Childrenroom_heating.sendCommand(ON)
+        }   
+        if(Heating_Mode.state!='STOP' && (Current_Temp > (Target_Temp+Hysteresis)) && FF_Childrenroom_heating.state!=OFF)
+            FF_Childrenroom_heating.sendCommand(OFF)
+    }
+end
+
+
+
