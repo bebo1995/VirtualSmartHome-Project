@@ -69,16 +69,16 @@ when
     Item Starting_Minute_System_Activation changed or
     Item Stopping_Hour_System_Activation changed or
     Item Stopping_Minute_System_Activation changed or
-    Time cron "0/10 0/1 * 1/1 * ? *" //Fire every 10 seconds (change to "0 0/1 * * * ?" to fire every minute) 
+    Time cron "0/30 0/1 * 1/1 * ? *" //Fire every 30 seconds (change to "0 0/1 * * * ?" to fire every minute) 
 
 then
     datos = new SimpleDateFormat ("yyyy-MM-dd HH:mm:ss")
     currentDate = new Date()
     currentDay = Calendar.getInstance().get(Calendar.YEAR).toString() + "-" + (Calendar.getInstance().get(Calendar.MONTH)+1).toString() + "-" + Calendar.getInstance().get(Calendar.DAY_OF_MONTH).toString()
-    startingClosingTime = currentDay + " " + Starting_Hour_Windows_Closing.state.toString + ":" + Starting_Hour_Windows_Closing.state.toString + ":00"
-    stoppingClosingTime = currentDay + " " + Stopping_Hour_Windows_Closing.state.toString + ":" + Stopping_Hour_Windows_Closing.state.toString + ":00"
-    startingSystemActivationTime = currentDay + " " + Starting_Hour_System_Activation.state.toString + ":" + Starting_Hour_System_Activation.state.toString + ":00"
-    stoppingSystemActivationTime = currentDay + " " + Stopping_Hour_System_Activation.state.toString + ":" + Stopping_Hour_System_Activation.state.toString + ":00"
+    startingClosingTime = currentDay + " " + Starting_Hour_Windows_Closing.state.toString + ":" + Starting_Minute_Windows_Closing.state.toString + ":00"
+    stoppingClosingTime = currentDay + " " + Stopping_Hour_Windows_Closing.state.toString + ":" + Stopping_Minute_Windows_Closing.state.toString + ":00"
+    startingSystemActivationTime = currentDay + " " + Starting_Hour_System_Activation.state.toString + ":" + Starting_Minute_System_Activation.state.toString + ":00"
+    stoppingSystemActivationTime = currentDay + " " + Stopping_Hour_System_Activation.state.toString + ":" + Stopping_Minute_System_Activation.state.toString + ":00"
     startingClosingDate = datos.parse(startingClosingTime)
     stoppingClosingDate = datos.parse(stoppingClosingTime)
     startingActivationDate = datos.parse(startingSystemActivationTime)
