@@ -29,7 +29,7 @@ This component communicates with Openhab through RestAPI, while a third part app
 ### Deployment Diagram
 The deployment diagram of our application is:
 
-![alt text](https://github.com/PederciniRita/VirtualSmartHome/blob/master/imagesForREADME/deployment_diagram.png?raw=true)
+![alt text](https://github.com/bebo1995/VirtualSmartHome-Project/blob/master/images/IT1_Deployment%20Diagram.png?raw=true)
 
 ### Project Collaborators
 Arrigoni Alberto, Bosc Daniele, Pedercini Rita
