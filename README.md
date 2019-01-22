@@ -21,7 +21,7 @@ The managed system implements a basic control, while the managing system allows 
 
 The control system realized is composed by two layers: the managed layer, for basic control functions, and the managing layer, for advanced control function.
 
-![alt text](https://github.com/PederciniRita/VirtualSmartHome/blob/master/imagesForREADME/management_system.JPG?raw=true)
+![alt text](https://github.com/bebo1995/VirtualSmartHome-Project/blob/master/images/management_system.JPG?raw=true)
 
 The last part of this project is about the creation of an OpenhabBroker, a Java component that allows the communication between the OpenHab system and a third part application. This component implements a polling service and offer some get methods, with whom the third part application can access to the data collected by polling, a setStatus method and a sendCommand method to modify the status of an openhab item. 
 This component communicates with Openhab through RestAPI, while a third part application can use this service by simple method invocation.
