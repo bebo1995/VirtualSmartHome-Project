@@ -20,7 +20,7 @@ A secondary goal of this project is about the creation of a broker component in 
 ### Deployment Diagram
 The deployment diagram of our application is:
 
-![alt text](https://github.com/bebo1995/VirtualSmartHome-Project/blob/master/images/IT1_Deployment%20Diagram.png?raw=true)
+![alt text](https://github.com/bebo1995/VirtualSmartHome-Project/blob/master/images/new_IT1_Deployment%20Diagram.png?raw=true)
 
 ### Project Collaborators
 UniBG students: Arrigoni Alberto, Bosc Daniele, Pedercini Rita
