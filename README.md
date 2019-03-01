@@ -10,6 +10,7 @@ Assuming the device abstraction provided by OpenHAB and its rule engine, the man
 - maximize the heating comfort;
 - maximize the air quality indoor;
 - guarantee fire detection.
+
  Also the simulation of the behavior of our virtual smarthome environemnt has been realized with the OpenHAB rules system. 
 
 ![alt text](https://github.com/bebo1995/VirtualSmartHome-Project/blob/master/images/management_system.JPG?raw=true)
